@@ -1,0 +1,91 @@
+WEBVTT
+
+
+STYLE
+::cue(c) {
+    /* Styles for regular subtitles at the bottom */
+    line: 90%; /* position subtitles at the bottom */
+    align: middle; /* center-align text */
+    size: 20%; /* width of the cue box */
+}
+::cue(.cultural-note) {
+    /* Styles for cultural notes at the top */
+    line: 10%; /* position at the top */
+    align: middle; /* center-align text */
+    size: 20%; /* width of the cue box */
+    background-color: rgba(0, 0, 0, 0.7);
+    color: yellow;
+    font-size: 18px;
+}
+
+00:00:00.000 --> 00:00:53.000 c
+Coke Studio Season 14
+
+00:00:53.000 --> 00:01:03.000 c
+I am compelled to, I have to drink this poison. I have to endure your torment. 
+
+00:01:03.000 --> 00:01:18.000 c
+He was supposed to come but he didn't. My heart is pounding. The crow said to tell me, where are his footprints? I searched everywhere but couldn't find him. Please don't stop me.
+
+00:01:18.000 --> 00:01:28.000 .cultural-note
+Dhol: A double-headed drum widely used in South Asian music, especially in Punjabi folk music.
+
+00:01:18.000 --> 00:01:28.000 class:c
+My dhol of separation, how will you know? Your heart will ache.
+
+00:01:28.000 --> 00:01:38.000 c
+The conversations we built, how will they happen? Your heart will never be complete.
+
+00:01:43.000 --> 00:02:03.000 c
+I have forgotten my compulsion, forgotten the world's oppression. I have so much to do with you. I have to fulfill my needs.
+
+00:02:03.000 --> 00:02:08.000 c
+I will go, I will call you, everything will be alright.
+
+00:02:08.000 --> 00:02:18.000 .cultural-note
+Dhol: A double-headed drum widely used in South Asian music, especially in Punjabi folk music.
+
+00:02:08.000 --> 00:02:18.000 c
+My dhol of separation, how will you know? Your heart will ache.
+
+00:02:18.000 --> 00:02:28.000 c
+The conversations we built, how will they happen? Your heart will never be complete.
+
+00:02:28.000 --> 00:02:44.000 c
+It will never be complete
+
+00:02:40.000 --> 00:02:44.000 .cultural-note
+Dhol: A double-headed drum widely used in South Asian music, especially in Punjabi folk music.
+
+00:02:40.000 --> 00:02:44.000 c
+My dhol of separation, there will be no peace.
+
+00:02:45.000 --> 00:03:05.000 .cultural-note
+Dhol: A double-headed drum widely used in South Asian music, especially in Punjabi folk music.
+
+00:02:45.000 --> 00:03:05.000 c
+My dhol of separation, there will be no peace.
+
+00:03:05.000 --> 00:03:15.000 c
+There will be no peace in lovers' hearts, there will be no consolation.
+
+00:03:15.000 --> 00:03:41.000 c
+Come take me with you. I want to be yours. End this sorrow, make it true, make us one.
+
+00:03:45.000 --> 00:03:55.000 c
+I am compelled to, I have to drink this poison. I have to endure your torment. 
+
+00:03:55.000 --> 00:04:00.000 c
+I searched everywhere but couldn't find him. Please don't stop me.
+
+00:04:00.000 --> 00:04:10.000 .cultural-note
+Dhol: A double-headed drum widely used in South Asian music, especially in Punjabi folk music.
+
+00:04:00.000 --> 00:04:10.000 c
+My dhol of separation, how will you know? Your heart will ache.
+
+00:04:10.000 --> 00:04:20.000 c
+The conversations we built, how will they happen? Your heart will never be complete.
+
+00:04:20.000 --> 00:04:26.000 c
+It will never be complete.
