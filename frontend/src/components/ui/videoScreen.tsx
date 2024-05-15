@@ -16,6 +16,7 @@ const VideoFilePlayer: React.FC = () => {
   const [showSubtitles, setShowSubtitles] = useState<boolean>(false);
   const [showImages, setShowImages] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
+  const [uploading, setUploading] = useState<boolean>(false);
 
   const [currentTime, setCurrentTime] = useState(0);
   const [visibleLexicons, setVisibleLexicons] = useState<any[]>([]);
@@ -87,7 +88,9 @@ const VideoFilePlayer: React.FC = () => {
   const handleVideoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      setUploading(true);
       setVideoFile(file);
+      setUploading(false); // Hide the loader after upload
     }
   };
 
@@ -145,45 +148,53 @@ const VideoFilePlayer: React.FC = () => {
   return (
     <div className="mt-[100px]">
       {!videoFile && (
-        <div className="flex  items-center justify-center ">
-          <label
-            htmlFor="dropzone-file"
-            className="flex flex-col items-center justify-center w-full h-screen border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100"
-          >
-            <div className="flex flex-col items-center justify-center pt-5 pb-6">
-              <svg
-                aria-hidden="true"
-                className="w-10 h-10 mb-3 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.904 6a4 4 0 01-7.902.88l-.82.82a2 2 0 11-2.828-2.828l.82.82A3 3 0 0313 12a3 3 0 00-7 2.828l.82.82a2 2 0 11-2.828-2.828l-.82-.82z"
-                ></path>
-              </svg>
-              <p className="mb-2 text-sm text-gray-500">
-                <span className="font-semibold">
-                  Click to upload your favorite music
-                </span>{" "}
-                or drag and drop
-              </p>
-              <p className="text-xs text-gray-500">
-                MP4, MOV, AVI, MKV up to 10MB
-              </p>
+        <div>
+          {uploading ? (
+            <div className="w-12 h-12 border-t-4 border-blue-500 rounded-full animate-spin">
+              Uploading video ...
             </div>
-            <input
-              id="dropzone-file"
-              type="file"
-              className="hidden"
-              onChange={handleVideoUpload}
-              accept=".mp4,.mov,.avi,.mkv"
-            />
-          </label>
+          ) : (
+            <div className="flex  items-center justify-center ">
+              <label
+                htmlFor="dropzone-file"
+                className="flex flex-col items-center justify-center w-full h-screen border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100"
+              >
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  <svg
+                    aria-hidden="true"
+                    className="w-10 h-10 mb-3 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.904 6a4 4 0 01-7.902.88l-.82.82a2 2 0 11-2.828-2.828l.82.82A3 3 0 0313 12a3 3 0 00-7 2.828l.82.82a2 2 0 11-2.828-2.828l-.82-.82z"
+                    ></path>
+                  </svg>
+                  <p className="mb-2 text-sm text-gray-500">
+                    <span className="font-semibold">
+                      Click to upload your favorite music
+                    </span>{" "}
+                    or drag and drop
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    MP4, MOV, AVI, MKV up to 10MB
+                  </p>
+                </div>
+                <input
+                  id="dropzone-file"
+                  type="file"
+                  className="hidden"
+                  onChange={handleVideoUpload}
+                  accept=".mp4,.mov,.avi,.mkv"
+                />
+              </label>
+            </div>
+          )}
         </div>
       )}
 
