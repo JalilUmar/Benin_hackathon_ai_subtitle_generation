@@ -3,7 +3,7 @@ import { toast } from "react-hot-toast";
 // Success toast
 export const successToast = (message: string) => {
   toast.success(message, {
-    position: "top-center",
+    position: "top-right",
     duration: 3000,
     style: {
       border: "2px solid #10B981",
@@ -34,7 +34,7 @@ export const completionToast = (message: string) => {
 // Error toast
 export const errorToast = (message: string) => {
   toast.error(message, {
-    position: "top-center",
+    position: "top-right",
     duration: 3000,
     style: {
       border: "2px solid #EF4444",

@@ -1,6 +1,18 @@
 import moviepy.editor as mp
 import os
 
+from fastapi import WebSocket
+from langchain.tools import tool
+import requests
+
+
+from dotenv import load_dotenv, find_dotenv
+
+
+_: bool = load_dotenv(find_dotenv())
+
+STABILITY_AI_API_KEY = os.getenv("STABILITY_AI_API_KEY")
+
 
 def extract_audio(video_path):
     # Load the video file
@@ -68,14 +80,47 @@ def json_to_webvtt(json_data):
         start = convert_time(item["startTime"])
         end = convert_time(item["endTime"])
 
-        # Add cultural notes if available
-        # if item.get("culturalLexicon", []):
-        #     for note in item["culturalLexicon"]:
-        #         webvtt += f"\n{start} --> {end} .cultural-note\n"
-        #         webvtt += f"{note['term']}: {note['explanation']}\n"
-
         # Add subtitle
         subtitle = item["Subtitle"]
         webvtt += f"\n{start} --> {end} c\n{subtitle}\n"
 
     return webvtt
+
+
+def get_agent_tools(websocket: WebSocket):
+
+    @tool("stable_diffusion_image_generator", return_direct=True)
+    async def image_generator(prompts: list[str]):
+        """
+        This tool will be used to generate high quality images for songs that will represent the theme of the songs
+        """
+        i = 0
+        for prompt in prompts:
+            response = requests.post(
+                "https://api.stability.ai/v2beta/stable-image/generate/sd3",
+                headers={
+                    "authorization": f"Bearer {STABILITY_AI_API_KEY}",
+                    "accept": "image/*",
+                },
+                files={"none": ""},
+                data={
+                    "prompt": prompt,
+                    "output_format": "jpeg",
+                },
+            )
+            i += 1
+            if response.status_code == 200:
+                current_dir = os.path.dirname(os.path.realpath(__file__))
+                file_path = os.path.join(current_dir, f"../frontend/public/{i}.jpeg")
+                # file_name = f"{i}.jpeg"
+                with open(file_path, "wb") as file:
+                    file.write(response.content)
+                print(f"Image saved as {file_path}")
+            else:
+                "Image generation failed"
+
+        await websocket.send_json({"message": "Image generation successfull"})
+
+        return "Image generation successfull"
+
+    return [image_generator]

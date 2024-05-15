@@ -5,6 +5,7 @@ import React, { useState, useRef, useEffect } from "react";
 import Title from "./title";
 import toast, { Toaster } from "react-hot-toast";
 import { completionToast, errorToast, successToast } from "@/utils/toaster";
+import Image from "next/image";
 
 const VideoFilePlayer: React.FC = () => {
   const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -13,6 +14,7 @@ const VideoFilePlayer: React.FC = () => {
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [lexicons, setLexicons] = useState<any[]>([]);
   const [showSubtitles, setShowSubtitles] = useState<boolean>(false);
+  const [showImages, setShowImages] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
 
   const [currentTime, setCurrentTime] = useState(0);
@@ -52,10 +54,17 @@ const VideoFilePlayer: React.FC = () => {
         // setWsData(event.data);
         const data = JSON.parse(event.data); // Parse incoming JSON data
         console.log(data);
-        setLexicons(extractCulturalLexicons(data));
-        setShowSubtitles(true);
-        successToast("Subtitles Generated Successfully!");
-        setLoading(false);
+        if (data.json_res) {
+          setLexicons(extractCulturalLexicons(data.json_res));
+          setShowSubtitles(true);
+          successToast("Subtitles Generated Successfully!");
+          setLoading(false);
+        } else if (data.message) {
+          setShowImages(true);
+          console.log(data.message);
+        } else {
+          console.log("Data not arrived yet");
+        }
       };
 
       socket.onclose = () => {
@@ -177,8 +186,35 @@ const VideoFilePlayer: React.FC = () => {
       )}
 
       <div className="flex justify-center items-center gap-x-[20px]">
+        {showImages && (
+          <div className="w-1/4 text-2xl font-bold font-sans text-center grid gap-y-5 justify-center ">
+            <h3>Related Images</h3>
+
+            <Image
+              src={"/1.jpeg"}
+              alt=""
+              height="200"
+              width="200"
+              className="rounded-md"
+            />
+            <Image
+              src={"/2.jpeg"}
+              alt=""
+              height="200"
+              width="200"
+              className="rounded-md"
+            />
+            <Image
+              src={"/3.jpeg"}
+              alt=""
+              height="200"
+              width="200"
+              className="rounded-md"
+            />
+          </div>
+        )}
         {videoFile && (
-          <div className="grid justify-center items-center w-3/4">
+          <div className="grid justify-center items-center w-2/4">
             <video
               className="w-full rounded-lg shadow-lg mb-4"
               controls
@@ -231,7 +267,7 @@ const VideoFilePlayer: React.FC = () => {
           </div>
         )}
 
-        <div className="grid justify-center ">
+        <div className="grid justify-center w-1/4 ">
           {visibleLexicons.length > 0 && (
             <h3 className="text-2xl font-bold font-sans text-center">
               Cultural Words
