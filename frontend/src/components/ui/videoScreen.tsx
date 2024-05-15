@@ -59,7 +59,9 @@ const VideoFilePlayer: React.FC = () => {
           setShowSubtitles(true);
           successToast("Subtitles Generated Successfully!");
           setLoading(false);
+          successToast("Image generation started ...");
         } else if (data.message) {
+          successToast("Images generated successfully!");
           setShowImages(true);
           console.log(data.message);
         } else {
