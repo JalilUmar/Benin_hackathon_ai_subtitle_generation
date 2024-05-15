@@ -5,7 +5,6 @@ import React, { useState, useRef, useEffect } from "react";
 import Title from "./title";
 import toast, { Toaster } from "react-hot-toast";
 import { completionToast, errorToast, successToast } from "@/utils/toaster";
-import Header from "../header";
 
 const VideoFilePlayer: React.FC = () => {
   const [videoFile, setVideoFile] = useState<File | null>(null);
