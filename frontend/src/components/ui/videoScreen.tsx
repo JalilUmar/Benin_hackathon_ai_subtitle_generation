@@ -125,80 +125,73 @@ const VideoFilePlayer: React.FC = () => {
         </div>
       )}
 
-      {videoFile && (
-        <div className="grid justify-center items-center">
-          <video
-            className="w-full rounded-lg shadow-lg mb-4"
-            controls
-            ref={videoRef}
-            onTimeUpdate={handleTimeUpdate}
-          >
-            <source src={URL.createObjectURL(videoFile)} type="video/mp4" />
-            {showSubtitles && (
-              <track
-                src="/subtitle.vtt"
-                kind="subtitles"
-                label="Subtitles"
-                default
-              />
-            )}
-            Your browser does not support the video tag.
-          </video>
+      <div className="flex justify-center items-center">
+        {videoFile && (
+          <div className="grid justify-center items-center ">
+            <video
+              className="w-full rounded-lg shadow-lg mb-4"
+              controls
+              ref={videoRef}
+              onTimeUpdate={handleTimeUpdate}
+            >
+              <source src={URL.createObjectURL(videoFile)} type="video/mp4" />
+              {showSubtitles && (
+                <track
+                  src="/subtitle.vtt"
+                  kind="subtitles"
+                  label="Subtitles"
+                  default
+                />
+              )}
+              Your browser does not support the video tag.
+            </video>
 
-          <label className="block mb-2 text-lg font-semibold">
-            Select a language for subtitles:
-          </label>
-          <select
-            className="border border-gray-300 rounded px-4 py-2 mb-4 text-black"
-            value={language}
-            onChange={(e) => setlanguage(e.target.value)}
-            defaultValue={"English"}
-            disabled={loading}
-          >
-            <option value="English">English</option>
-            <option value="French">French</option>
-            <option value="Spanish">Spanish</option>
-            <option value="German">German</option>
-            <option value="Chinese">Chinese</option>
-            <option value="Hindi">Hindi</option>
-          </select>
+            <label className="block mb-2 text-lg font-semibold">
+              Select a language for subtitles:
+            </label>
+            <select
+              className="border border-gray-300 rounded px-4 py-2 mb-4 text-black"
+              value={language}
+              onChange={(e) => setlanguage(e.target.value)}
+              disabled={loading}
+            >
+              <option value="null">Please select a language</option>
+              <option value="English">English</option>
+              <option value="French">French</option>
+              <option value="Spanish">Spanish</option>
+              <option value="German">German</option>
+              <option value="Chinese">Chinese</option>
+              <option value="Hindi">Hindi</option>
+            </select>
 
-          <button
-            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg"
-            onClick={sendVideo}
-            disabled={loading}
-          >
-            {loading ? "Generating subtitles ..." : "Generate Subtitles"}
-          </button>
-        </div>
-      )}
-
-      {/* {visibleLexicons.map((item: any) => {
-        return (
-          <div className="Grid justify-center items-center" key={item.term}>
-            <span>
-              <h3>Term:</h3>
-              <p>{item.term}</p>
-            </span>
-            <span>
-              <h3>Meaning:</h3>
-              <p>{item.explanation}</p>
-            </span>
+            <button
+              className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg"
+              onClick={sendVideo}
+              disabled={loading}
+            >
+              {loading ? "Generating subtitles ..." : "Generate Subtitles"}
+            </button>
           </div>
-        );
-      })} */}
-      <div className="grid justify-center items-center">
-        {visibleLexicons.map((item: any) => (
-          <div
-            key={item.term}
-            className="max-w-sm rounded overflow-hidden shadow-lg bg-white m-4 p-6"
-          >
-            <div className="font-bold text-xl mb-2 text-indigo-500">
-              {item.term}
+        )}
+
+        <div className="grid justify-center ">
+          {visibleLexicons.length > 0 && (
+            <h3 className="text-2xl font-bold font-sans text-center">
+              Cultural Words
+            </h3>
+          )}
+          {visibleLexicons.map((item: any) => (
+            <div
+              key={item.term}
+              className="max-w-[300px] rounded overflow-hidden shadow-lg bg-white m-4 p-6"
+            >
+              <div className="font-bold text-xl mb-2 text-indigo-500">
+                {item.term}
+              </div>
+              <p className="text-gray-700 text-base">{item.explanation}</p>
             </div>
-            <p className="text-gray-700 text-base">{item.explanation}</p>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
       <Toaster />
     </div>

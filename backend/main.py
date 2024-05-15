@@ -27,6 +27,8 @@ async def video_subtitle_generator(ws: WebSocket):
             data = await ws.receive_text()
             request_data = json.loads(data)
             language = request_data["lang"]
+            print("language", language)
+
             chunk = bytearray(request_data["videoChunk"])
             video_buffer.write(chunk)
             print(
@@ -77,6 +79,7 @@ async def video_subtitle_generator(ws: WebSocket):
                         # {LLM_SUBTITLE_SCHEMA}
                         # """
 
+                        print("language", language)
                         prompt = f"""
                         ##TASK##
                         Translate the provided audio song file into **{language}** for subtitle creation (follow the json schema), ensuring clarity and accessibility for **{language}** speakers unfamiliar with different cultures. 
