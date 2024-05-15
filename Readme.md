@@ -1,11 +1,7 @@
 ## Link to the project:
 http://ec2-3-238-62-160.compute-1.amazonaws.com:3000/
 
-## Note:
-We forgot to add the section where images gets generated becuase we were in hurry and we submitted at last point but you can test it out by your self when you will upload and start subtitle generation after a while the newly generated images will appear.
-Thanks.
-
-If there is some issue please refresh the page it will began to work out.
+If there is any issue please refresh the page it will began to work out.
 
 ## How to run backend:
 
