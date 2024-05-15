@@ -1,4 +1,4 @@
-import os, json, traceback, io
+import os, json, traceback, io, time
 
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 import google.generativeai as genai
@@ -19,12 +19,11 @@ generation_config = {
 @app.websocket("/subtitle/ws")
 async def video_subtitle_generator(ws: WebSocket):
     await ws.accept()
+    print("Websocket started ...\n\n")
     video_buffer = io.BytesIO()
 
     while True:
         try:
-            print("Working till now1")
-
             data = await ws.receive_text()
             request_data = json.loads(data)
             language = request_data["lang"]
@@ -41,230 +40,93 @@ async def video_subtitle_generator(ws: WebSocket):
 
                 extract_audio("test_vid_audio_ws.mp4")
 
-                print("Working till now3")
+                print("Last chunk reieved and video file written ...\n\n")
 
-                # model = genai.GenerativeModel(
-                #     model_name="gemini-1.5-pro-latest",
-                #     generation_config=generation_config,
-                #     safety_settings=SAFETY_SETTINGS,
-                # )
+                max_retries = 3
+                for attempt in range(max_retries):
+                    try:
 
-                # path = "test_vid_audio_ws.mp3"
-                # audiofile = genai.upload_file(path=path, display_name=path)
+                        model = genai.GenerativeModel(
+                            model_name="gemini-1.5-pro-latest",
+                            generation_config=generation_config,
+                            safety_settings=SAFETY_SETTINGS,
+                        )
 
-                # print("Working till now4")
+                        path = "test_vid_audio_ws.mp3"
+                        audiofile = genai.upload_file(path=path, display_name=path)
 
-                # prompt = f"""
-                # Translate the provided audio file into {language} for subtitle creation (follow the json schema), ensuring clarity and accessibility for  {language}  speakers unfamiliar with different culture. Identify any culturally specific phrases or terms in the lyrics that might require additional explanation for an international audience.
-                # For each culturally specific term, include an entry in the 'culturalLexicon' within the JSON output. This will help {language} users understand not just the language but also the cultural context of the lyrics.
+                        print("Audio uploaded to gemini ...\n\n")
 
-                # Here's the JSON schema
-                # {LLM_SUBTITLE_SCHEMA}
-                # Please ensure the Subtitles are accurate and follwing json schema and the explanations are detailed enough to convey the deeper meanings and cultural significance of the terms.
-                # """
+                        # prompt = f"""
+                        # ##TASK##
+                        # You are a skilled audio translator and transcriber.  You will receive an audio song and a target language. Your job is to translate the song into the target language, ensuring clarity and accessibility for speakers unfamiliar with the song's cultural context.
 
-                # # Configuration for generative AI model, specifying a longer timeout for processing audio and text.
-                # model = genai.GenerativeModel(
-                #     model_name="gemini-1.5-pro-latest",
-                #     generation_config={"response_mime_type": "application/json"},
-                # )
-                # response = model.generate_content(
-                #     [prompt, audiofile], request_options={"timeout": 180}
-                # )
-                # print(response.text)
+                        # ##INSTRUCTIONS##
 
-                # print("Working till now5")
+                        # 1. **Analyze the language of the audio.**
+                        # 2. **If the audio language and target language are the same, transcribe the song accurately.**
+                        # 3. **If the languages are different, translate the lyrics into the target language.**
+                        # 4. **Identify culturally specific phrases or terms in the lyrics.**
+                        # 5. **Provide a 'culturalLexicon' for each culturally specific term to help non-native listeners understand the context.**
+                        # 6. **Strictly adhere to the provided JSON schema for output.**
 
-                # save this data to a file:
-                # gemini_res = json.loads(response.text)
-                gemini_res = [
-                    {
-                        "startTime": "00:00",
-                        "endTime": "00:53",
-                        "Subtitle": "",
-                        "culturalLexicon": [],
-                    },
-                    {
-                        "startTime": "00:53",
-                        "endTime": "01:03",
-                        "Subtitle": "मजबूरी को आगे बुलाऊं, आने जाने की आदत को ज़हर बना, हाँ तेरी पी जाऊं मैं पूरी",
-                        "culturalLexicon": [],
-                    },
-                    {
-                        "startTime": "01:03",
-                        "endTime": "01:18",
-                        "Subtitle": "आना था वो नहीं आया, दिल बाग बाग मेरा टकराया, कागा बोल के दस जावे,  पावें क्यों उसकी सूरी। रावां च बावां च उनको ढूंढू, कोई मुझे ना रोके",
-                        "culturalLexicon": [
-                            {
-                                "term": "कागा बोल के दस जावे",
-                                "explanation": "This phrase refers to seeking guidance or a message from a crow, often seen as a messenger in South Asian folklore. It reflects the protagonist's desperation in seeking answers about their beloved.",
+                        # ##INPUT##
+                        # Target Language: "{language}"
+
+                        # ##OUTPUT JSON SCHEMA##
+                        # {LLM_SUBTITLE_SCHEMA}
+                        # """
+
+                        prompt = f"""
+                        ##TASK##
+                        Translate the provided audio song file into **{language}** for subtitle creation (follow the json schema), ensuring clarity and accessibility for **{language}** speakers unfamiliar with different cultures. 
+
+                        **IMPORTANT**: Please ensure that the translation is in the target language (**{language}**) and not in the source language (the language of the audio file). 
+
+                        Identify any culturally specific phrases or terms in the lyrics that might require additional explanation for an international audience. For each culturally specific term, include an entry in the 'culturalLexicon' within the JSON output. This will help **{language}** users understand not just the language but also the cultural context of the lyrics.
+
+                        ##output json Schema##
+                        {LLM_SUBTITLE_SCHEMA}
+                        
+                        
+                        ##instruction##
+
+                        1. Please provide a translation of the song in the target language (**{language}**).
+                        2. 'culturalLexicon' should be provided to better explain subtitles.
+                        3. The response should always follow the provided schema.
+                        4. **Double-check** that the translation is in the target language (**{language}**) and not in the source language (the language of the audio file).
+                        """
+
+                        # Configuration for generative AI model, specifying a longer timeout for processing audio and text.
+                        model = genai.GenerativeModel(
+                            model_name="gemini-1.5-pro-latest",
+                            generation_config={
+                                "response_mime_type": "application/json"
                             },
-                            {
-                                "term": "पावें क्यों उसकी सूरी",
-                                "explanation": " सूरी translates to 'clue'. The protagonist wonders why they are unable to find any clue of their beloved's whereabouts.",
-                            },
-                        ],
-                    },
-                    {
-                        "startTime": "01:18",
-                        "endTime": "01:28",
-                        "Subtitle": "मेरे ढोल जुदाईयां दी, तेनू खबर किवें होवे, आ जावे दिल तेरा पूरा भी ना होवे",
-                        "culturalLexicon": [
-                            {
-                                "term": "ढोल जुदाईयां दी",
-                                "explanation": "This metaphor uses 'ढोल', a traditional drum, to represent the sound of separation. It signifies that the pain of separation is so profound that it resonates like the beating of a drum, a sound that is hard to ignore.",
-                            }
-                        ],
-                    },
-                    {
-                        "startTime": "01:28",
-                        "endTime": "01:38",
-                        "Subtitle": "हां बड़ियां बनाइयां दी, गल बात किवें होवे, आ जावे दिल तेरा पूरा भी ना होवे",
-                        "culturalLexicon": [],
-                    },
-                    {
-                        "startTime": "01:38",
-                        "endTime": "01:47",
-                        "Subtitle": "",
-                        "culturalLexicon": [],
-                    },
-                    {
-                        "startTime": "01:47",
-                        "endTime": "02:07",
-                        "Subtitle": "भूल गई मजबूरी नु, दुनिया दी दस्तूरी नु, साथ तेरा है बथेरा, पूरा कर ज़रूरी नु। आना था वो नहीं आया, रास्ता ना दिखलाया, तुम्हारा ते सहारा,  ख्वाहिश अधूरी नु। सारी मैं जावां मैं तेनू बुलावां, गल सारी तां होवे",
-                        "culturalLexicon": [
-                            {
-                                "term": "दुनिया दी दस्तूरी",
-                                "explanation": "This phrase refers to societal norms and expectations. The protagonist is expressing their willingness to defy societal expectations for their love.",
-                            }
-                        ],
-                    },
-                    {
-                        "startTime": "02:07",
-                        "endTime": "02:18",
-                        "Subtitle": "मेरे ढोल जुदाईयां दी, तेनू खबर किवें होवे, आ जावे दिल तेरा पूरा भी ना होवे",
-                        "culturalLexicon": [],
-                    },
-                    {
-                        "startTime": "02:18",
-                        "endTime": "02:28",
-                        "Subtitle": "हां बड़ियां बनाइयां दी, गल बात किवें होवे, आ जावे दिल तेरा पूरा भी ना होवे",
-                        "culturalLexicon": [],
-                    },
-                    {
-                        "startTime": "02:28",
-                        "endTime": "02:40",
-                        "Subtitle": "",
-                        "culturalLexicon": [],
-                    },
-                    {
-                        "startTime": "02:40",
-                        "endTime": "02:44",
-                        "Subtitle": "मेरे ढोल जुदाईयां दी, सर्दारी ना होवे",
-                        "culturalLexicon": [
-                            {
-                                "term": "सर्दारी ना होवे",
-                                "explanation": "This phrase implies that the pain of separation does not discriminate. It affects everyone equally, regardless of their social status (represented by 'सर्दारी').",
-                            }
-                        ],
-                    },
-                    {
-                        "startTime": "02:44",
-                        "endTime": "02:50",
-                        "Subtitle": "मेरे ढोल जुदाईयां दी",
-                        "culturalLexicon": [],
-                    },
-                    {
-                        "startTime": "02:50",
-                        "endTime": "03:00",
-                        "Subtitle": "",
-                        "culturalLexicon": [],
-                    },
-                    {
-                        "startTime": "03:00",
-                        "endTime": "03:04",
-                        "Subtitle": "मेरे ढोल जुदाईयां दी, सर्दारी ना होवे",
-                        "culturalLexicon": [],
-                    },
-                    {
-                        "startTime": "03:04",
-                        "endTime": "03:10",
-                        "Subtitle": "दिलदारां दी सब यारां दी, आज़ादी ना होवे",
-                        "culturalLexicon": [],
-                    },
-                    {
-                        "startTime": "03:10",
-                        "endTime": "03:15",
-                        "Subtitle": "दिलदारां दी सब यारां दी, आज़ादी ना होवे",
-                        "culturalLexicon": [],
-                    },
-                    {
-                        "startTime": "03:15",
-                        "endTime": "03:26",
-                        "Subtitle": "आज ले ले के तुझे, है जहाँ से ले, तू है वही",
-                        "culturalLexicon": [],
-                    },
-                    {
-                        "startTime": "03:26",
-                        "endTime": "03:36",
-                        "Subtitle": "तेरी कमी, बना दे सज़ा दे पन्ना के हमें",
-                        "culturalLexicon": [],
-                    },
-                    {
-                        "startTime": "03:36",
-                        "endTime": "03:41",
-                        "Subtitle": "बना दे सज़ा दे पन्ना के हमें",
-                        "culturalLexicon": [],
-                    },
-                    {
-                        "startTime": "03:41",
-                        "endTime": "03:45",
-                        "Subtitle": "",
-                        "culturalLexicon": [],
-                    },
-                    {
-                        "startTime": "03:45",
-                        "endTime": "03:55",
-                        "Subtitle": "आगे लावां मजबूरी नु, आण जान ति बसुड़ी नु, ज़हर बने, हां तेरी पी जावां मैं पूरी नु। रावां च बावां च उनुं लुकावं",
-                        "culturalLexicon": [],
-                    },
-                    {
-                        "startTime": "03:55",
-                        "endTime": "04:10",
-                        "Subtitle": "कोई मेनु ना रोके, मेरे ढोल जुदाईयां दी, तेनू खबर किवें होवे, आ जावे दिल तेरा पूरा भी ना होवे",
-                        "culturalLexicon": [],
-                    },
-                    {
-                        "startTime": "04:10",
-                        "endTime": "04:20",
-                        "Subtitle": "हां बड़ियां बनाइयां दी, गल बात किवें होवे, आ जावे दिल तेरा पूरा भी ना होवे",
-                        "culturalLexicon": [],
-                    },
-                    {
-                        "startTime": "04:20",
-                        "endTime": "04:24",
-                        "Subtitle": "पूरा भी ना होवे",
-                        "culturalLexicon": [],
-                    },
-                    {
-                        "startTime": "04:24",
-                        "endTime": "04:26",
-                        "Subtitle": "पूरा भी ना होवे",
-                        "culturalLexicon": [],
-                    },
-                    {
-                        "startTime": "04:26",
-                        "endTime": "04:36",
-                        "Subtitle": "",
-                        "culturalLexicon": [],
-                    },
-                ]
+                        )
+                        response = model.generate_content(
+                            [prompt, audiofile], request_options={"timeout": 180}
+                        )
+                        print(response.text)
+                        print("Gemini responsded successfully ... \n\n")
 
-                await ws.send_json(gemini_res)
+                        print("Converting gemini response to json... \n\n")
+                        # save this data to a file:
+                        gemini_res = json.loads(response.text)
+
+                        break
+                    except Exception as e:
+                        print(f"Attempt {attempt + 1} failed with exception: {e}")
+                        if attempt < max_retries - 1:
+                            print("Retrying...")
+                            time.sleep(1)
+                        else:
+                            print("Maximum retries exceeded. Exiting...")
+
                 webvtt_content = json_to_webvtt(gemini_res)
                 print(webvtt_content)
 
-                print("Working till now6")
+                print("WebVtt created successfully ....\n\n")
 
                 current_dir = os.path.dirname(os.path.realpath(__file__))
                 file_path = os.path.join(current_dir, "../frontend/public/subtitle.vtt")
@@ -272,8 +134,12 @@ async def video_subtitle_generator(ws: WebSocket):
                 with open(file_path, "w", encoding="utf-8") as f:
                     f.write(webvtt_content)
 
-                # send webvtt content to the ui
-                # await ws.send_json({"webvtt": webvtt_content})
+                print("Subtitles file written successfully ... \n\n")
+
+                # sending complete json data back to client
+                await ws.send_json(gemini_res)
+
+                print("Gemini response send to client ... \n\n")
 
                 # send this file back to the ui.
 

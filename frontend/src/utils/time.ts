@@ -18,7 +18,7 @@ export function extractCulturalLexicons(schema: any) {
       lexicons.push(lexiconEntry);
     });
   });
-
+  console.log("Lexicons:\n\n", lexicons);
   return lexicons;
 }
 

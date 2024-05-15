@@ -1,9 +1,10 @@
 "use client";
 
 import { extractCulturalLexicons } from "@/utils/time";
-import { error } from "console";
 import React, { useState, useRef, useEffect } from "react";
 import Title from "./title";
+import toast, { Toaster } from "react-hot-toast";
+import { completionToast, errorToast, successToast } from "@/utils/toaster";
 
 const VideoFilePlayer: React.FC = () => {
   const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -11,8 +12,8 @@ const VideoFilePlayer: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [lexicons, setLexicons] = useState<any[]>([]);
-  const [subtitles, setSubtitles] = useState<any>();
-  const [modelRes, setModelRes] = useState<any>();
+  const [showSubtitles, setShowSubtitles] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const [currentTime, setCurrentTime] = useState(0);
   const [visibleLexicons, setVisibleLexicons] = useState<any[]>([]);
@@ -28,10 +29,13 @@ const VideoFilePlayer: React.FC = () => {
       };
 
       socket.onmessage = (event) => {
+        // setWsData(event.data);
         const data = JSON.parse(event.data); // Parse incoming JSON data
-        // setModelRes(event.data);
         console.log(data);
         setLexicons(extractCulturalLexicons(data));
+        setShowSubtitles(true);
+        successToast("Subtitles Generated Successfully!");
+        setLoading(false);
       };
 
       socket.onclose = () => {
@@ -40,6 +44,7 @@ const VideoFilePlayer: React.FC = () => {
 
       socket.onerror = (error) => {
         console.log("Ooops! something went wrong\n", error);
+        errorToast("Ooops! Something went wrong.");
       };
 
       return () => {
@@ -71,6 +76,8 @@ const VideoFilePlayer: React.FC = () => {
   };
   const sendVideo = () => {
     if (ws && videoFile) {
+      setLoading(true);
+      successToast("Generating Subtitles Please Wait...");
       const chunkSize = 1024 * 1024; // 1MB chunks
       let offset = 0;
       const reader = new FileReader();
@@ -108,7 +115,7 @@ const VideoFilePlayer: React.FC = () => {
     <div className="mt-4">
       {!videoFile && (
         <div className="grid justify-center items-center">
-          <Title subtitle={modelRes} />
+          <Title />
           <input
             type="file"
             accept=".mp4,.mov,.avi,.mkv"
@@ -127,12 +134,14 @@ const VideoFilePlayer: React.FC = () => {
             onTimeUpdate={handleTimeUpdate}
           >
             <source src={URL.createObjectURL(videoFile)} type="video/mp4" />
-            <track
-              src="/subtitle.vtt"
-              kind="subtitles"
-              label="Subtitles"
-              default
-            />
+            {showSubtitles && (
+              <track
+                src="/subtitle.vtt"
+                kind="subtitles"
+                label="Subtitles"
+                default
+              />
+            )}
             Your browser does not support the video tag.
           </video>
 
@@ -144,6 +153,7 @@ const VideoFilePlayer: React.FC = () => {
             value={language}
             onChange={(e) => setlanguage(e.target.value)}
             defaultValue={"English"}
+            disabled={loading}
           >
             <option value="English">English</option>
             <option value="French">French</option>
@@ -156,20 +166,41 @@ const VideoFilePlayer: React.FC = () => {
           <button
             className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg"
             onClick={sendVideo}
+            disabled={loading}
           >
-            Generate Subtitles
+            {loading ? "Generating subtitles ..." : "Generate Subtitles"}
           </button>
         </div>
       )}
 
-      {visibleLexicons.map((item: any) => {
+      {/* {visibleLexicons.map((item: any) => {
         return (
-          <div className="flex justify-center items-center" key={item.term}>
-            <p>{item.term}</p>
-            <p>{item.explanation}</p>
+          <div className="Grid justify-center items-center" key={item.term}>
+            <span>
+              <h3>Term:</h3>
+              <p>{item.term}</p>
+            </span>
+            <span>
+              <h3>Meaning:</h3>
+              <p>{item.explanation}</p>
+            </span>
           </div>
         );
-      })}
+      })} */}
+      <div className="grid justify-center items-center">
+        {visibleLexicons.map((item: any) => (
+          <div
+            key={item.term}
+            className="max-w-sm rounded overflow-hidden shadow-lg bg-white m-4 p-6"
+          >
+            <div className="font-bold text-xl mb-2 text-indigo-500">
+              {item.term}
+            </div>
+            <p className="text-gray-700 text-base">{item.explanation}</p>
+          </div>
+        ))}
+      </div>
+      <Toaster />
     </div>
   );
 };
